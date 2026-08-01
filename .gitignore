@@ -55,3 +55,6 @@ prisma/dev.db-wal
 
 # uploaded catalog images (runtime data, not source)
 public/uploads/
+
+.vercel
+.env*

@@ -6,7 +6,7 @@ import { mockTryOnProvider } from "@/lib/ai/providers/mock";
 import type { TryOnProviderName, TryOnResult } from "@/lib/ai/types";
 
 // Real AI inference (incl. free ZeroGPU cold starts) can take up to 7 minutes.
-export const maxDuration = 480;
+export const maxDuration = 60;
 
 // Image references: absolute URL (uploaded photos / data URIs) or a
 // root-relative path into public/ (built-in demo garments).
