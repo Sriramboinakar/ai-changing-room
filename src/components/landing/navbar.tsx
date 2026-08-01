@@ -57,6 +57,9 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" className="hidden h-9 rounded-xl px-3 md:inline-flex">
+            <Link href="/owner">For store owners</Link>
+          </Button>
           <ThemeToggle />
           <Button asChild className="hidden h-9 rounded-xl px-4 md:inline-flex">
             <Link href="/try-on">
@@ -94,6 +97,14 @@ export function Navbar() {
                   Try it free
                   <ArrowRight />
                 </Link>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                className="mt-2 w-full rounded-xl"
+                onClick={() => setOpen(false)}
+              >
+                <Link href="/owner">For store owners</Link>
               </Button>
             </SheetContent>
           </Sheet>

@@ -54,7 +54,7 @@ function toBuffer(value: ArrayBuffer): Buffer {
  *   SVGs are rasterized to PNG because the model consumes raster images only
  * - absolute http(s) URLs are fetched and re-encoded
  */
-async function toRasterDataUrl(imageUrl: string): Promise<string> {
+export async function toRasterDataUrl(imageUrl: string): Promise<string> {
   if (isDataUrl(imageUrl)) return imageUrl;
 
   if (imageUrl.startsWith("/")) {

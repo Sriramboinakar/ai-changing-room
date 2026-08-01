@@ -22,4 +22,4 @@ export interface TryOnProvider {
   generate(request: TryOnRequest): Promise<TryOnResult>;
 }
 
-export type TryOnProviderName = "mock" | "huggingface" | "fal";
+export type TryOnProviderName = "mock" | "huggingface" | "fal" | "idmvton";

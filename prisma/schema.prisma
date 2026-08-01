@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Store {
+  id        String        @id @default(cuid())
+  name      String
+  slug      String        @unique
+  createdAt DateTime      @default(now())
+  items     CatalogItem[]
+}
+
+model CatalogItem {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String
+  category  String
+  imageUrl  String
+  createdAt DateTime @default(now())
+  sortOrder Int      @default(0)
+
+  @@index([storeId, category])
+  @@index([storeId, createdAt])
+}

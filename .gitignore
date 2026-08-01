@@ -43,3 +43,15 @@ Thumbs.db
 
 # turbo
 .turbo/
+
+# database (SQLite — local file, never commit)
+prisma/dev.db
+prisma/dev.db-journal
+prisma/dev.db-shm
+prisma/dev.db-wal
+
+# prisma generated client
+/src/generated/
+
+# uploaded catalog images (runtime data, not source)
+public/uploads/

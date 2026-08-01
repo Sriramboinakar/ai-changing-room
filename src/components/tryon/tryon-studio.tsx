@@ -34,6 +34,8 @@ export function TryOnStudio() {
   const [error, setError] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const generatingRef = useRef(false);
+  const cancelledByUserRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -97,13 +99,23 @@ export function TryOnStudio() {
     setGarment(selected);
     if (selected) {
       setResult(null);
+      setError(null);
+      if (customerImage) {
+        abortRef.current?.abort();
+        setStage("generating");
+        setTimeout(() => void generate(selected), 0);
+      } else {
+        setStage("setup");
+      }
+    } else {
       setStage("setup");
     }
   };
 
-  const generate = async () => {
-    if (!customerImage || !garment || generating) return;
+  const generate = async (garmentToTryOn: SelectedGarment | null = garment) => {
+    if (!customerImage || !garmentToTryOn || generatingRef.current) return;
 
+    generatingRef.current = true;
     setError(null);
     setGenerating(true);
     setStage("generating");
@@ -117,8 +129,8 @@ export function TryOnStudio() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerImageUrl: customerImage,
-          garmentImageUrl: garment.imageUrl,
-          garmentName: garment.name,
+          garmentImageUrl: garmentToTryOn.imageUrl,
+          garmentName: garmentToTryOn.name,
         }),
         signal: controller.signal,
       });
@@ -135,9 +147,11 @@ export function TryOnStudio() {
       setStage("result");
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") {
-        toast.info("Generation cancelled", {
-          description: "Your uploads are still here when you're ready.",
-        });
+        if (cancelledByUserRef.current) {
+          toast.info("Generation cancelled", {
+            description: "Your uploads are still here when you're ready.",
+          });
+        }
       } else {
         const message = caught instanceof Error ? caught.message : "Something went wrong.";
         setError(message);
@@ -145,12 +159,15 @@ export function TryOnStudio() {
       }
       setStage("setup");
     } finally {
+      cancelledByUserRef.current = false;
+      generatingRef.current = false;
       setGenerating(false);
       abortRef.current = null;
     }
   };
 
   const handleCancel = () => {
+    cancelledByUserRef.current = true;
     abortRef.current?.abort();
   };
 
@@ -180,7 +197,8 @@ export function TryOnStudio() {
             {result && stage === "result" ? "Your look, ready." : "Dress yourself in seconds."}
           </h1>
           <p className="text-muted-foreground max-w-2xl">
-            Upload your photo, pick a garment, and let AI show you how it looks before you buy.
+            Upload your photo, browse the store catalog, and let AI show you how each garment
+            looks on you — switch garments freely without re-uploading.
           </p>
         </div>
 
@@ -308,7 +326,7 @@ export function TryOnStudio() {
                             : "Add a photo and a garment to begin"}
                     </p>
                     <p className="text-muted-foreground text-xs">
-                      ≈ 3–5 seconds · free demo · no account
+                      Free demo · AI-generated · usually under a minute
                     </p>
                   </div>
                 </div>
