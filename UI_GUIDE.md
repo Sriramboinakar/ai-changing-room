@@ -14,7 +14,7 @@ Focus on smooth user experience, beautiful animations, and clean layouts.
 
 - Premium
 - Elegant
-- Modern
+- Royal Heritage
 - Luxury Fashion
 - Minimal
 - AI-Powered
@@ -25,33 +25,38 @@ Focus on smooth user experience, beautiful animations, and clean layouts.
 
 ## Primary
 
-Black
-#111111
+Madder Maroon
+#7A1226
 
 ## Secondary
 
-White
-#FFFFFF
+Warm Ivory
+#FBF6EC
 
 ## Accent
 
-Gold
-#D4AF37
+Royal Gold
+#C79A2E (light) / #D4AF37 (dark)
+
+## Foreground
+
+Warm Ink
+#2B1716
 
 ## Background
 
-Off White
-#FAF9F6
+Warm Ivory
+#FBF6EC
 
 ## Success
 
 Green
-#22C55E
+#15803D
 
 ## Error
 
 Red
-#EF4444
+#DC2626
 
 ---
 
@@ -59,7 +64,7 @@ Red
 
 Heading
 
-- Poppins
+- Playfair Display
 - Inter
 
 Body
@@ -70,7 +75,7 @@ Buttons
 
 - Semi Bold
 
-Avoid decorative fonts.
+Avoid decorative fonts (ornamental scripts only as motifs, never for UI text).
 
 ---
 

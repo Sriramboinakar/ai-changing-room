@@ -27,8 +27,12 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="bg-accent/15 absolute -top-40 right-[-10%] size-[560px] rounded-full blur-[120px]" />
-        <div className="bg-primary/5 absolute bottom-[-30%] left-[-10%] size-[480px] rounded-full blur-[100px]" />
+        <div className="bg-jali absolute inset-0 opacity-70" />
+        <div className="animate-floaty bg-accent/15 absolute -top-40 right-[-10%] size-[560px] rounded-full blur-[120px]" />
+        <div
+          className="animate-floaty bg-primary/5 absolute bottom-[-30%] left-[-10%] size-[480px] rounded-full blur-[100px]"
+          style={{ animationDelay: "-4s" }}
+        />
       </div>
 
       <div className="container-page grid items-center gap-14 pt-32 pb-20 sm:pt-40 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pt-44 lg:pb-28">
@@ -55,7 +59,7 @@ export function Hero() {
           >
             See it on you,
             <br />
-            <span className="bg-gradient-to-r from-[#8A6D1A] via-[#B3881F] to-[#C9A63B] bg-clip-text text-transparent">
+            <span className="text-shimmer bg-gradient-to-r from-[#A07A1D] via-[#C79A2E] to-[#8F6B1E] bg-clip-text text-transparent">
               before you buy.
             </span>
           </motion.h1>
@@ -64,8 +68,8 @@ export function Hero() {
             variants={item}
             className="text-muted-foreground max-w-lg text-base leading-relaxed sm:text-lg"
           >
-            Upload a photo, pick a garment, and watch AI dress you in seconds. No account, no cards
-            — just your next outfit, previewed on you.
+            Upload a photo, pick the saree, lehenga, or kurta you&apos;ve been eyeing — and watch AI
+            dress you in seconds. No account, no cards — just your next outfit, previewed on you.
           </motion.p>
 
           <motion.div variants={item} className="flex flex-wrap items-center gap-3">
@@ -112,7 +116,11 @@ export function Hero() {
           transition={{ duration: 1, delay: 0.35, ease }}
           className="relative mx-auto w-full max-w-md lg:max-w-none"
         >
-          <div className="border-border bg-card relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-[2rem] border shadow-2xl shadow-black/10 dark:shadow-black/40">
+          <div
+            aria-hidden="true"
+            className="from-accent/30 via-primary/10 to-transparent pointer-events-none absolute -inset-3 rounded-[3rem] bg-gradient-to-br blur-2xl"
+          />
+          <div className="border-accent/40 bg-card relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-[2rem] border shadow-2xl shadow-primary/20 dark:shadow-black/40">
             <Image
               src="/demo/result.svg"
               alt="AI-generated preview of a customer wearing a gold outfit"

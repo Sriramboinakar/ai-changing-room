@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
+import { GarmentMarquee } from "@/components/landing/garment-marquee";
 import { StatsBand } from "@/components/landing/stats-band";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Features } from "@/components/landing/features";
@@ -36,6 +37,7 @@ export default function HomePage() {
       <Navbar />
       <main id="main-content">
         <Hero />
+        <GarmentMarquee />
         <StatsBand />
         <HowItWorks />
         <Features />

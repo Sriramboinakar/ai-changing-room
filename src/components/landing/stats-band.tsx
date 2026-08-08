@@ -18,7 +18,7 @@ export function StatsBand() {
             className="flex flex-col items-center gap-1 px-6 py-10 text-center"
           >
             <span className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-              <span className="bg-gradient-to-r from-[#8A6D1A] to-[#B3881F] bg-clip-text text-transparent">
+              <span className="text-shimmer bg-gradient-to-r from-[#8A6D1A] to-[#C79A2E] bg-clip-text text-transparent">
                 {stat.value}
               </span>
             </span>
