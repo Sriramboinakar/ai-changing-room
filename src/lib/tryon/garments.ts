@@ -36,6 +36,72 @@ export const DEMO_GARMENTS: DemoGarment[] = [
     category: "Saree",
     imageUrl: "/demo/garments/WhatsAppImage2026-01-27at8.48.19PM.webp",
   },
+  {
+    id: "saree-6",
+    name: "Designer Saree",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-f.jpeg",
+  },
+  {
+    id: "saree-7",
+    name: "Printed Saree",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-h.jpeg",
+  },
+  {
+    id: "kurta-1",
+    name: "Black Kurta",
+    category: "Kurta",
+    imageUrl: "/demo/garments/kurtha-black.jpg",
+  },
+  {
+    id: "saree-8",
+    name: "Saree 1",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-1.jpeg",
+  },
+  {
+    id: "saree-9",
+    name: "Saree 2",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-2.jpeg",
+  },
+  {
+    id: "saree-10",
+    name: "Saree 3",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-3.jpeg",
+  },
+  {
+    id: "saree-11",
+    name: "Saree 4",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-4.jpeg",
+  },
+  {
+    id: "saree-12",
+    name: "Saree 5",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-5.jpeg",
+  },
+  {
+    id: "saree-13",
+    name: "Saree 6",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-6.jpeg",
+  },
+  {
+    id: "saree-14",
+    name: "Saree 7",
+    category: "Saree",
+    imageUrl: "/demo/garments/saree-7.jpeg",
+  },
+  {
+    id: "person-1",
+    name: "My Photo",
+    category: "Top",
+    imageUrl: "/demo/garments/my-pic.jfif",
+  },
 ];
 
 export interface SelectedGarment {
