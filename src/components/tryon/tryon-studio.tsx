@@ -12,18 +12,12 @@ import { ImageCropDialog } from "@/components/tryon/image-crop-dialog";
 import { GarmentPicker } from "@/components/tryon/garment-picker";
 import { GenerationOverlay } from "@/components/tryon/generation-overlay";
 import { ResultView, type TryOnResultDto } from "@/components/tryon/result-view";
+import { useTryOn } from "@/hooks/use-tryon";
 import type { SelectedGarment } from "@/lib/tryon/garments";
 import { clearSession, loadSession, saveSession } from "@/lib/tryon/session";
 import { cn } from "@/lib/utils";
 
 type Stage = "setup" | "generating" | "result";
-
-interface ApiResponse {
-  success: boolean;
-  message?: string;
-  notice?: string;
-  data?: TryOnResultDto;
-}
 
 export function TryOnStudio() {
   const [customerImage, setCustomerImage] = useState<string | null>(null);
@@ -35,8 +29,9 @@ export function TryOnStudio() {
   const [cropOpen, setCropOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
   const generatingRef = useRef(false);
-  const cancelledByUserRef = useRef(false);
-  const abortRef = useRef<AbortController | null>(null);
+
+  const tryOn = useTryOn();
+  const { stage: tryOnStage, result: tryOnResult, error: tryOnError, notice: tryOnNotice, reset: resetTryOn } = tryOn;
 
   useEffect(() => {
     const session = loadSession();
@@ -74,8 +69,25 @@ export function TryOnStudio() {
   }, [customerImage, customerRawImage, garment, result]);
 
   useEffect(() => {
-    return () => abortRef.current?.abort();
-  }, []);
+    if (tryOnStage === "done") {
+      if (tryOnResult) {
+        setResult(tryOnResult);
+        if (tryOnNotice) {
+          toast.info("Demo Mode", { description: tryOnNotice });
+        }
+      }
+      setStage("result");
+      setGenerating(false);
+      generatingRef.current = false;
+      resetTryOn();
+    } else if (tryOnStage === "failed") {
+      setError(tryOnError ?? "Generation failed.");
+      setStage("setup");
+      setGenerating(false);
+      generatingRef.current = false;
+      resetTryOn();
+    }
+  }, [tryOnStage, tryOnResult, tryOnError, tryOnNotice, resetTryOn]);
 
   const handleCustomerSelected = (dataUrl: string) => {
     setCustomerRawImage(dataUrl);
@@ -101,7 +113,7 @@ export function TryOnStudio() {
       setResult(null);
       setError(null);
       if (customerImage) {
-        abortRef.current?.abort();
+        tryOn.cancel();
         setStage("generating");
         setTimeout(() => void generate(selected), 0);
       } else {
@@ -120,59 +132,25 @@ export function TryOnStudio() {
     setGenerating(true);
     setStage("generating");
 
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    try {
-      const response = await fetch("/api/tryon", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerImageUrl: customerImage,
-          garmentImageUrl: garmentToTryOn.imageUrl,
-          garmentName: garmentToTryOn.name,
-        }),
-        signal: controller.signal,
-      });
-
-      const json = (await response.json()) as ApiResponse;
-      if (!response.ok || !json.success || !json.data) {
-        throw new Error(json.message ?? "Generation failed.");
-      }
-
-      setResult(json.data);
-      if (json.notice) {
-        toast.info("Demo Mode", { description: json.notice });
-      }
-      setStage("result");
-    } catch (caught) {
-      if (caught instanceof DOMException && caught.name === "AbortError") {
-        if (cancelledByUserRef.current) {
-          toast.info("Generation cancelled", {
-            description: "Your uploads are still here when you're ready.",
-          });
-        }
-      } else {
-        const message = caught instanceof Error ? caught.message : "Something went wrong.";
-        setError(message);
-        toast.error("Generation failed", { description: message });
-      }
-      setStage("setup");
-    } finally {
-      cancelledByUserRef.current = false;
-      generatingRef.current = false;
-      setGenerating(false);
-      abortRef.current = null;
-    }
+    await tryOn.start({
+      customerImageUrl: customerImage,
+      garmentImageUrl: garmentToTryOn.imageUrl,
+      garmentName: garmentToTryOn.name,
+    });
   };
 
   const handleCancel = () => {
-    cancelledByUserRef.current = true;
-    abortRef.current?.abort();
+    tryOn.cancel();
+    setStage("setup");
+    setGenerating(false);
+    generatingRef.current = false;
+    toast.info("Generation cancelled", {
+      description: "Your uploads are still here when you're ready.",
+    });
   };
 
   const handleStartOver = () => {
-    abortRef.current?.abort();
+    tryOn.reset();
     setCustomerImage(null);
     setCustomerRawImage(null);
     setGarment(null);
@@ -394,6 +372,7 @@ export function TryOnStudio() {
         customerImage={customerImage ?? ""}
         garmentImage={garment?.imageUrl ?? ""}
         garmentName={garment?.name ?? "your outfit"}
+        queuePosition={tryOn.queuePosition}
         onCancel={handleCancel}
       />
 

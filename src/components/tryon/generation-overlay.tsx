@@ -14,6 +14,7 @@ interface GenerationOverlayProps {
   garmentName: string;
   onCancel: () => void;
   estimatedMs?: number;
+  queuePosition?: number | null;
 }
 
 const STATUS_MESSAGES = [
@@ -30,6 +31,7 @@ export function GenerationOverlay({
   garmentName,
   onCancel,
   estimatedMs = 5000,
+  queuePosition = null,
 }: GenerationOverlayProps) {
   const [progress, setProgress] = useState(0);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -135,6 +137,11 @@ export function GenerationOverlay({
               </motion.p>
             </AnimatePresence>
           </div>
+          {typeof queuePosition === "number" && queuePosition > 0 ? (
+            <p className="text-accent-strong text-xs font-medium" aria-live="polite">
+              The AI studio is busy — you&apos;re position #{queuePosition} in line.
+            </p>
+          ) : null}
         </div>
 
         <div className="flex w-full flex-col gap-2">

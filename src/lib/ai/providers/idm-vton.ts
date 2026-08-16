@@ -24,7 +24,7 @@ interface GradioConfig {
 
 let fnIndexPromise: Promise<number> | null = null;
 
-function spaceBaseUrl(): string {
+export function spaceBaseUrl(): string {
   const custom = process.env.HF_CUSTOM_SPACE_URL?.trim();
   if (custom) return custom.replace(/\/+$/, "");
   return (process.env.IDMVTON_SPACE_URL ?? DEFAULT_SPACE_URL).trim().replace(/\/+$/, "");
@@ -197,58 +197,91 @@ async function waitForJobResult(queueUrl: string, deadline: number): Promise<{ m
  * complete, then download the result as a data URI.
  * When the Space is paused, busy or rate-limited the route falls back to mock.
  */
+
+export interface IdmVtonJob {
+  spaceUrl: string;
+  sessionHash: string;
+}
+
+/**
+ * Fast step of the streaming flow: resolve the Space config, rasterize both
+ * inputs, upload them to the Space and join the try-on queue. Returns the
+ * session hash + base URL the client can stream /queue/data from directly
+ * (bypassing any serverless function duration limit).
+ */
+export async function startIdmVtonJob(request: TryOnRequest): Promise<IdmVtonJob> {
+  const baseUrl = spaceBaseUrl();
+  const fnIndex = await tryOnFnIndex();
+
+  const [humanDataUrl, garmentDataUrl] = await Promise.all([
+    toRasterDataUrl(request.customerImageUrl),
+    toRasterDataUrl(request.garmentImageUrl),
+  ]);
+
+  const [humanFile, garmentFile] = await Promise.all([
+    uploadFile(baseUrl, humanDataUrl, "human.png"),
+    uploadFile(baseUrl, garmentDataUrl, "garment.png"),
+  ]);
+
+  const sessionHash = randomUUID();
+  const submitResponse = await fetch(`${baseUrl}/queue/join`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...hfAuthHeaders() },
+    body: JSON.stringify({
+      data: [
+        { background: { ...humanFile, meta: { _type: "gradio.FileData" } }, layers: [], composite: null },
+        { ...garmentFile, meta: { _type: "gradio.FileData" } },
+        describeGarment(request.garmentName),
+        true,
+        false,
+        DENOISE_STEPS,
+        SEED,
+      ],
+      event_data: null,
+      fn_index: fnIndex,
+      session_hash: sessionHash,
+      trigger_id: fnIndex,
+    }),
+    signal: AbortSignal.timeout(60_000),
+  });
+
+  if (!submitResponse.ok) {
+    const detail = await submitResponse.text().catch(() => "");
+    const status = submitResponse.status;
+    if (status === 503) {
+      console.warn("[idmvton] Space returned 503 (unavailable), falling back to mock");
+      throw new Error(`IDM-VTON Space unavailable (503)`);
+    }
+    throw new Error(`Gradio submit failed (status ${status})${detail ? `: ${detail}` : ""}`);
+  }
+
+  return { spaceUrl: baseUrl, sessionHash };
+}
+
+/** Downloads a completed try-on result from the Space and returns it as a data URI. */
+export async function downloadIdmVtonResult(resultUrl: string): Promise<string> {
+  const imageResponse = await fetch(resultUrl, {
+    headers: hfAuthHeaders(),
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!imageResponse.ok) {
+    throw new Error(`IDM-VTON result download failed (status ${imageResponse.status})`);
+  }
+  const contentType = imageResponse.headers.get("content-type") ?? "image/png";
+  const bytes = Buffer.from(await imageResponse.arrayBuffer());
+  return `data:${contentType};base64,${bytes.toString("base64")}`;
+}
+
 export class IdmVtonTryOnProvider implements TryOnProvider {
   readonly name = "idmvton";
 
   async generate(request: TryOnRequest): Promise<TryOnResult> {
     const startedAt = Date.now();
-    const baseUrl = spaceBaseUrl();
-    const fnIndex = await tryOnFnIndex();
 
-    const [humanDataUrl, garmentDataUrl] = await Promise.all([
-      toRasterDataUrl(request.customerImageUrl),
-      toRasterDataUrl(request.garmentImageUrl),
-    ]);
-
-    const [humanFile, garmentFile] = await Promise.all([
-      uploadFile(baseUrl, humanDataUrl, "human.png"),
-      uploadFile(baseUrl, garmentDataUrl, "garment.png"),
-    ]);
-
-    const sessionHash = randomUUID();
-    const submitResponse = await fetch(`${baseUrl}/queue/join`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...hfAuthHeaders() },
-      body: JSON.stringify({
-        data: [
-          { background: { ...humanFile, meta: { _type: "gradio.FileData" } }, layers: [], composite: null },
-          { ...garmentFile, meta: { _type: "gradio.FileData" } },
-          describeGarment(request.garmentName),
-          true,
-          false,
-          DENOISE_STEPS,
-          SEED,
-        ],
-        event_data: null,
-        fn_index: fnIndex,
-        session_hash: sessionHash,
-        trigger_id: fnIndex,
-      }),
-      signal: AbortSignal.timeout(60_000),
-    });
-
-    if (!submitResponse.ok) {
-      const detail = await submitResponse.text().catch(() => "");
-      const status = submitResponse.status;
-      if (status === 503) {
-        console.warn("[idmvton] Space returned 503 (unavailable), falling back to mock");
-        throw new Error(`IDM-VTON Space unavailable (503)`);
-      }
-      throw new Error(`Gradio submit failed (status ${status})${detail ? `: ${detail}` : ""}`);
-    }
+    const { spaceUrl, sessionHash } = await startIdmVtonJob(request);
 
     const deadline = Date.now() + POLL_TIMEOUT_MS;
-    const { msg, data } = await waitForJobResult(`${baseUrl}/queue/data?session_hash=${sessionHash}`, deadline);
+    const { msg, data } = await waitForJobResult(`${spaceUrl}/queue/data?session_hash=${sessionHash}`, deadline);
 
     let resultUrl: string | undefined;
     let failureReason: string | undefined;
@@ -277,18 +310,10 @@ export class IdmVtonTryOnProvider implements TryOnProvider {
       throw new Error("IDM-VTON returned no result image");
     }
 
-    const imageResponse = await fetch(resultUrl, {
-      headers: hfAuthHeaders(),
-      signal: AbortSignal.timeout(60_000),
-    });
-    if (!imageResponse.ok) {
-      throw new Error(`IDM-VTON result download failed (status ${imageResponse.status})`);
-    }
-    const contentType = imageResponse.headers.get("content-type") ?? "image/png";
-    const bytes = Buffer.from(await imageResponse.arrayBuffer());
+    const imageUrl = await downloadIdmVtonResult(resultUrl);
 
     return {
-      imageUrl: `data:${contentType};base64,${bytes.toString("base64")}`,
+      imageUrl,
       provider: this.name,
       durationMs: Date.now() - startedAt,
     };
