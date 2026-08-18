@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getTryOnProvider } from "@/lib/ai";
+import { getAiBudgetStatus, tryConsumeAiBudget } from "@/lib/ai/budget";
 import { mockTryOnProvider } from "@/lib/ai/providers/mock";
 import type { TryOnProviderName, TryOnResult } from "@/lib/ai/types";
 
@@ -42,6 +43,8 @@ const NOTICE_NOT_CONFIGURED =
   "Real AI isn't configured yet — missing its API key in .env.local. Showing a demo result instead.";
 const NOTICE_SPACE_BUSY =
   "The AI Space is busy or paused — showing a demo result instead. Your uploads stay on your device.";
+const NOTICE_BUDGET =
+  "Daily real-AI budget reached — showing a demo result instead. It resets at midnight UTC.";
 
 export async function POST(request: Request) {
   const requestedProvider = (process.env.AI_PROVIDER ?? "mock") as TryOnProviderName;
@@ -64,8 +67,16 @@ export async function POST(request: Request) {
       return successResponse(mockResult, NOTICE_NOT_CONFIGURED);
     }
 
+    // Real AI was requested but its daily budget is used up — don't burn the
+    // free quota; serve a demo result instead.
+    if (realAiRequested && provider.name === "idmvton" && getAiBudgetStatus().exhausted) {
+      const mockResult = await mockTryOnProvider.generate(body.data);
+      return successResponse(mockResult, NOTICE_BUDGET);
+    }
+
     try {
       const result = await provider.generate(body.data);
+      if (provider.name === "idmvton") tryConsumeAiBudget();
       return successResponse(result);
     } catch (error) {
       // Automatic fallback: keep the demo usable when the real AI fails.
