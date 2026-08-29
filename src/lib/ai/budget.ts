@@ -11,7 +11,7 @@ import path from "node:path";
  * jobs for the rest of the day, returning demo results instead.
  *
  * Configuration:
- *   AI_DAILY_LIMIT         max real generations per day (default 5; 0 = unlimited)
+ *   AI_DAILY_LIMIT         max real generations per day (default: 5 per HF token, min 5; 0 = unlimited)
  *   AI_DAILY_BUDGET_FILE   custom counter path (default: <os.tmpdir()>/ai-changing-room-ai-budget.json)
  *
  * Persistence is a small JSON file, which is stable on a long-running dev
@@ -35,17 +35,28 @@ interface StoredBudget {
 }
 
 const memoryBudget: Map<string, number> = new Map();
-const DEFAULT_LIMIT = 5;
+const PER_ACCOUNT_LIMIT = 5;
 
 function todayKey(date: Date = new Date()): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** Default allowance scales with the number of HF accounts the user rotates. */
+function defaultLimit(): number {
+  const tokens = (process.env.HF_TOKENS ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const hasSingle = Boolean((process.env.HUGGINGFACE_TOKEN ?? process.env.HF_TOKEN)?.trim());
+  const count = Math.max(1, tokens.length, hasSingle ? 1 : 0);
+  return PER_ACCOUNT_LIMIT * count;
+}
+
 function dailyLimit(): number {
   const raw = process.env.AI_DAILY_LIMIT?.trim();
-  if (!raw) return DEFAULT_LIMIT;
+  if (!raw) return defaultLimit();
   const n = Number(raw);
-  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : DEFAULT_LIMIT;
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : defaultLimit();
 }
 
 function budgetFile(): string {

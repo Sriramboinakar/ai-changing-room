@@ -31,12 +31,36 @@ export function spaceBaseUrl(): string {
 }
 
 /**
- * Optional Hugging Face token (free) — anonymous ZeroGPU usage is capped at a
- * few GPU-seconds per day, while authenticated users get a large daily quota.
- * Accepts HUGGINGFACE_TOKEN or HF_TOKEN; no token = still works, just slower.
+ * Hugging Face tokens (free) — anonymous ZeroGPU usage is capped at a few
+ * GPU-seconds per day, while authenticated users get a large daily quota.
+ *
+ * ZeroGPU quota is PER ACCOUNT, so to get more daily generations you can list
+ * several free account tokens in HF_TOKENS (comma separated) and the app will
+ * round-robin one token per job — each job then draws from a different
+ * account's quota. HUGGINGFACE_TOKEN / HF_TOKEN still work as a single token.
  */
-function hfAuthHeaders(): Record<string, string> {
-  const token = (process.env.HUGGINGFACE_TOKEN ?? process.env.HF_TOKEN)?.trim();
+function hfTokens(): string[] {
+  const list = (process.env.HF_TOKENS ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  if (list.length > 0) return list;
+  const single = (process.env.HUGGINGFACE_TOKEN ?? process.env.HF_TOKEN)?.trim();
+  return single ? [single] : [];
+}
+
+let tokenCursor = 0;
+
+/** Picks the HF account token for the next job (round-robin across accounts). */
+export function pickHfToken(): string | undefined {
+  const tokens = hfTokens();
+  if (tokens.length === 0) return undefined;
+  const token = tokens[tokenCursor % tokens.length];
+  tokenCursor += 1;
+  return token;
+}
+
+function hfAuthHeaders(token?: string): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -77,14 +101,19 @@ function tryOnFnIndex(): Promise<number> {
   return fnIndexPromise;
 }
 
-async function uploadFile(baseUrl: string, dataUrl: string, fileName: string): Promise<GradioFile> {
+async function uploadFile(
+  baseUrl: string,
+  dataUrl: string,
+  fileName: string,
+  token?: string
+): Promise<GradioFile> {
   const { mime, base64 } = parseDataUrl(dataUrl);
   const form = new FormData();
   form.append("files", toFileData(Buffer.from(base64, "base64"), mime), fileName);
 
   const response = await fetch(`${baseUrl}/upload`, {
     method: "POST",
-    headers: hfAuthHeaders(),
+    headers: hfAuthHeaders(token),
     body: form,
     signal: AbortSignal.timeout(30_000),
   });
@@ -112,14 +141,18 @@ async function uploadFile(baseUrl: string, dataUrl: string, fileName: string): P
  * starts on ZeroGPU can take minutes), so we hold the connection and
  * transparently reconnect if the server closes it mid-flight.
  */
-async function waitForJobResult(queueUrl: string, deadline: number): Promise<{ msg: string; data: string }> {
+async function waitForJobResult(
+  queueUrl: string,
+  deadline: number,
+  token?: string
+): Promise<{ msg: string; data: string }> {
   let iterations = 0;
   while (Date.now() < deadline && iterations < MAX_POLL_ITERATIONS) {
     iterations++;
     let response: Response;
     try {
       response = await fetch(queueUrl, {
-        headers: hfAuthHeaders(),
+        headers: hfAuthHeaders(token),
         signal: AbortSignal.timeout(POLL_FETCH_TIMEOUT_MS),
       });
     } catch (error) {
@@ -209,7 +242,10 @@ export interface IdmVtonJob {
  * session hash + base URL the client can stream /queue/data from directly
  * (bypassing any serverless function duration limit).
  */
-export async function startIdmVtonJob(request: TryOnRequest): Promise<IdmVtonJob> {
+export async function startIdmVtonJob(
+  request: TryOnRequest,
+  token?: string
+): Promise<IdmVtonJob> {
   const baseUrl = spaceBaseUrl();
   const fnIndex = await tryOnFnIndex();
 
@@ -219,14 +255,14 @@ export async function startIdmVtonJob(request: TryOnRequest): Promise<IdmVtonJob
   ]);
 
   const [humanFile, garmentFile] = await Promise.all([
-    uploadFile(baseUrl, humanDataUrl, "human.png"),
-    uploadFile(baseUrl, garmentDataUrl, "garment.png"),
+    uploadFile(baseUrl, humanDataUrl, "human.png", token),
+    uploadFile(baseUrl, garmentDataUrl, "garment.png", token),
   ]);
 
   const sessionHash = randomUUID();
   const submitResponse = await fetch(`${baseUrl}/queue/join`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...hfAuthHeaders() },
+    headers: { "Content-Type": "application/json", ...hfAuthHeaders(token) },
     body: JSON.stringify({
       data: [
         { background: { ...humanFile, meta: { _type: "gradio.FileData" } }, layers: [], composite: null },
@@ -259,9 +295,9 @@ export async function startIdmVtonJob(request: TryOnRequest): Promise<IdmVtonJob
 }
 
 /** Downloads a completed try-on result from the Space and returns it as a data URI. */
-export async function downloadIdmVtonResult(resultUrl: string): Promise<string> {
+export async function downloadIdmVtonResult(resultUrl: string, token?: string): Promise<string> {
   const imageResponse = await fetch(resultUrl, {
-    headers: hfAuthHeaders(),
+    headers: hfAuthHeaders(token),
     signal: AbortSignal.timeout(60_000),
   });
   if (!imageResponse.ok) {
@@ -277,11 +313,16 @@ export class IdmVtonTryOnProvider implements TryOnProvider {
 
   async generate(request: TryOnRequest): Promise<TryOnResult> {
     const startedAt = Date.now();
+    const token = pickHfToken();
 
-    const { spaceUrl, sessionHash } = await startIdmVtonJob(request);
+    const { spaceUrl, sessionHash } = await startIdmVtonJob(request, token);
 
     const deadline = Date.now() + POLL_TIMEOUT_MS;
-    const { msg, data } = await waitForJobResult(`${spaceUrl}/queue/data?session_hash=${sessionHash}`, deadline);
+    const { msg, data } = await waitForJobResult(
+      `${spaceUrl}/queue/data?session_hash=${sessionHash}`,
+      deadline,
+      token
+    );
 
     let resultUrl: string | undefined;
     let failureReason: string | undefined;
@@ -310,7 +351,7 @@ export class IdmVtonTryOnProvider implements TryOnProvider {
       throw new Error("IDM-VTON returned no result image");
     }
 
-    const imageUrl = await downloadIdmVtonResult(resultUrl);
+    const imageUrl = await downloadIdmVtonResult(resultUrl, token);
 
     return {
       imageUrl,
