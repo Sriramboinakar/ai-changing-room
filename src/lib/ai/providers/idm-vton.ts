@@ -269,7 +269,12 @@ export async function startIdmVtonJob(
         { ...garmentFile, meta: { _type: "gradio.FileData" } },
         describeGarment(request.garmentName),
         true,
-        false,
+        // is_checked_crop: the Space auto-crops the person to 3:4 for the
+        // model, then pastes the try-on back onto the ORIGINAL full image and
+        // returns that — preserving the complete person, scene and aspect
+        // ratio. Without it (false), the Space returns the raw 768x1024 model
+        // frame, which for full-length photos comes back as a half-body figure.
+        true,
         DENOISE_STEPS,
         SEED,
       ],

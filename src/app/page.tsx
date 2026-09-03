@@ -4,10 +4,8 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
 import { GarmentMarquee } from "@/components/landing/garment-marquee";
-import { StatsBand } from "@/components/landing/stats-band";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Features } from "@/components/landing/features";
-import { Testimonials } from "@/components/landing/testimonials";
 import { Faq } from "@/components/landing/faq";
 import { CtaSection } from "@/components/landing/cta-section";
 import { Footer } from "@/components/landing/footer";
@@ -38,13 +36,11 @@ export default function HomePage() {
       <main id="main-content">
         <Hero />
         <GarmentMarquee />
-        <StatsBand />
         <HowItWorks />
         <Features />
         <Suspense>
           <BeforeAfterDemo />
         </Suspense>
-        <Testimonials />
         <Faq />
         <CtaSection />
       </main>

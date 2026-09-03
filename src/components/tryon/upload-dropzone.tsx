@@ -85,7 +85,7 @@ export function UploadDropzone({
           className
         )}
       >
-        <div className="relative size-20 shrink-0 overflow-hidden rounded-xl">
+        <div className="border-border relative size-20 shrink-0 overflow-hidden rounded-xl border shadow-sm">
           <Image src={value} alt={previewAlt} fill sizes="5rem" className="object-cover" />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -136,13 +136,17 @@ export function UploadDropzone({
       onDragLeave={() => setDragging(false)}
       onDrop={onDrop}
       className={cn(
-        "focus-visible:ring-ring flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-300 focus-visible:ring-2 focus-visible:outline-none",
+        "focus-visible:ring-ring relative flex cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-300 focus-visible:ring-2 focus-visible:outline-none",
         dragging
-          ? "border-accent bg-accent/10 scale-[1.01]"
-          : "border-border bg-card hover:border-accent/60 hover:bg-card/70",
+          ? "border-primary bg-primary/5 scale-[1.01]"
+          : "border-primary/40 bg-card/60 hover:border-primary hover:bg-card",
         className
       )}
     >
+      <span
+        aria-hidden="true"
+        className="from-accent/10 to-transparent pointer-events-none absolute -top-20 left-1/2 size-48 -translate-x-1/2 rounded-full bg-gradient-to-b blur-3xl"
+      />
       <input
         ref={inputRef}
         type="file"
@@ -150,17 +154,22 @@ export function UploadDropzone({
         className="hidden"
         onChange={onInputChange}
       />
-      <span className="bg-muted text-muted-foreground group-hover:bg-accent/20 flex size-12 items-center justify-center rounded-2xl transition-colors">
+      <span
+        className={cn(
+          "bg-primary text-accent flex size-14 items-center justify-center rounded-2xl shadow-md shadow-primary/15 transition-transform duration-300",
+          dragging ? "scale-110" : "group-hover:scale-105"
+        )}
+      >
         <UploadCloud className="size-6" aria-hidden="true" />
       </span>
-      <span className="flex flex-col gap-1">
-        <span className="text-sm font-medium">
-          Drag &amp; drop your image{" "}
-          <span className="text-muted-foreground">or click to browse</span>
+      <span className="relative flex flex-col gap-1">
+        <span className="text-base font-semibold">
+          Upload your photo{" "}
+          <span className="text-muted-foreground font-normal">or tap to browse</span>
         </span>
-        <span className="text-muted-foreground text-xs">{hint}</span>
+        {hint ? <span className="text-muted-foreground text-sm">{hint}</span> : null}
       </span>
-      <span className="border-border bg-background text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs">
+      <span className="border-border bg-background text-muted-foreground relative inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs">
         <ImagePlus className="size-3.5" aria-hidden="true" />
         JPG · PNG · WEBP — up to 10 MB
       </span>

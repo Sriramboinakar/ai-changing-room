@@ -6,7 +6,6 @@ import { ArrowRight, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +33,7 @@ export function Navbar() {
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-300",
         scrolled
-          ? "border-border/60 bg-background/75 border-b shadow-sm backdrop-blur-xl"
+          ? "border-border/60 bg-background/80 border-b shadow-sm backdrop-blur-xl"
           : "bg-transparent"
       )}
     >
@@ -57,13 +56,12 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" className="hidden h-9 rounded-xl px-3 md:inline-flex">
-            <Link href="/owner">For store owners</Link>
-          </Button>
-          <ThemeToggle />
-          <Button asChild className="hidden h-9 rounded-xl px-4 md:inline-flex">
+          <Button
+            asChild
+            className="hidden h-10 rounded-xl bg-accent px-5 text-accent-foreground shadow-soft transition-all duration-300 hover:shadow-[0_0_24px_rgba(212,175,55,0.4)] md:inline-flex"
+          >
             <Link href="/try-on">
-              Try it free
+              Try It Free
               <ArrowRight />
             </Link>
           </Button>
@@ -92,19 +90,15 @@ export function Navbar() {
                   </Link>
                 ))}
               </div>
-              <Button asChild className="mt-4 w-full rounded-xl" onClick={() => setOpen(false)}>
-                <Link href="/try-on">
-                  Try it free
-                  <ArrowRight />
-                </Link>
-              </Button>
               <Button
                 asChild
-                variant="ghost"
-                className="mt-2 w-full rounded-xl"
+                className="mt-4 w-full rounded-xl bg-accent text-accent-foreground hover:bg-accent/90"
                 onClick={() => setOpen(false)}
               >
-                <Link href="/owner">For store owners</Link>
+                <Link href="/try-on">
+                  Try It Free
+                  <ArrowRight />
+                </Link>
               </Button>
             </SheetContent>
           </Sheet>

@@ -17,8 +17,8 @@ const FOOTER_COLUMNS = [
     links: [
       { label: "About", href: "#" },
       { label: "Contact", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Careers", href: "#" },
+      { label: "Privacy", href: "#" },
+      { label: "Terms", href: "#" },
     ],
   },
   {
@@ -69,25 +69,18 @@ const SOCIALS = [
       </svg>
     ),
   },
-  {
-    label: "GitHub",
-    href: "#",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
-        <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.66.41.36.78 1.06.78 2.14 0 1.54-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5" />
-      </svg>
-    ),
-  },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-border/60 bg-card/50 border-t">
-      <div className="container-page py-14">
+    <footer className="bg-[#170a0d] text-[#f4e8de]">
+      <div className="container-page py-16">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_2fr]">
           <div className="flex flex-col items-start gap-4">
-            <Logo />
-            <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
+            <div className="[&_span]:!text-[#f4e8de]">
+              <Logo />
+            </div>
+            <p className="text-[#b8a79c] max-w-xs text-sm leading-relaxed">
               The virtual fitting room that helps stores and shoppers see clothes before they buy.
             </p>
             <div className="flex items-center gap-2">
@@ -96,7 +89,7 @@ export function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="border-border bg-card text-muted-foreground hover:border-accent/50 hover:text-accent-strong focus-visible:ring-ring flex size-10 items-center justify-center rounded-xl border transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="border-white/10 text-[#b8a79c] hover:border-accent hover:text-accent flex size-10 items-center justify-center rounded-xl border transition-colors"
                 >
                   {social.icon}
                 </a>
@@ -107,13 +100,15 @@ export function Footer() {
           <nav className="grid grid-cols-2 gap-8 sm:grid-cols-3" aria-label="Footer">
             {FOOTER_COLUMNS.map((column) => (
               <div key={column.heading} className="flex flex-col gap-3">
-                <h3 className="font-heading text-sm font-semibold">{column.heading}</h3>
+                <h3 className="font-heading text-sm font-semibold text-[#f4e8de]">
+                  {column.heading}
+                </h3>
                 <ul className="flex flex-col gap-2.5">
                   {column.links.map((link) => (
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-sm text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                        className="text-[#b8a79c] hover:text-[#f4e8de] rounded-sm text-sm transition-colors"
                       >
                         {link.label}
                       </Link>
@@ -125,11 +120,11 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="border-border/60 mt-12 flex flex-col items-center justify-between gap-4 border-t pt-6 sm:flex-row">
-          <p className="text-muted-foreground text-xs">
+        <div className="border-white/10 mt-12 flex flex-col items-center justify-between gap-4 border-t pt-6 sm:flex-row">
+          <p className="text-[#b8a79c] text-xs">
             &copy; {new Date().getFullYear()} AI Changing Room. All rights reserved.
           </p>
-          <p className="border-border bg-card text-muted-foreground rounded-full border px-3 py-1 text-xs">
+          <p className="border-white/10 text-[#b8a79c] rounded-full border px-3 py-1 text-xs">
             Free MVP demo — no payments, no plans, just try-on
           </p>
         </div>

@@ -80,24 +80,14 @@ export function GenerationOverlay({
       aria-label="Generating your AI try-on"
       className="bg-background/90 fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-xl"
     >
-      <div className="border-border bg-card flex w-full max-w-md flex-col items-center gap-7 rounded-[2rem] border p-8 shadow-2xl">
-        <div className="relative flex items-center justify-center">
-          <div
-            className="size-44 animate-spin rounded-full opacity-80"
-            style={{
-              background: "conic-gradient(from 0deg, transparent 0%, #D4AF37 40%, transparent 70%)",
-              mask: "radial-gradient(circle, transparent 58%, black 60%)",
-              WebkitMask: "radial-gradient(circle, transparent 58%, black 60%)",
-              animationDuration: "1.6s",
-            }}
-            aria-hidden="true"
-          />
+      <div className="border-border bg-card flex w-full max-w-md flex-col items-center gap-7 rounded-2xl border p-8 shadow-soft">
+        <div className="relative flex items-center">
           <motion.div
-            animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
+            animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute flex items-center"
+            className="flex items-center"
           >
-            <div className="border-background relative size-20 overflow-hidden rounded-2xl border-2 shadow-xl">
+            <div className="border-background relative size-20 overflow-hidden rounded-xl border-2 shadow-soft">
               <Image
                 src={customerImage}
                 alt=""
@@ -106,7 +96,7 @@ export function GenerationOverlay({
                 className="object-cover object-top"
               />
             </div>
-            <div className="border-background relative -ml-5 size-20 overflow-hidden rounded-2xl border-2 shadow-xl">
+            <div className="border-background relative -ml-5 size-20 overflow-hidden rounded-xl border-2 shadow-soft">
               <Image
                 src={garmentImage}
                 alt=""
@@ -122,7 +112,14 @@ export function GenerationOverlay({
         </div>
 
         <div className="flex flex-col items-center gap-1.5 text-center">
-          <p className="font-heading text-lg font-semibold">Dressing you in {garmentName}</p>
+          <p className="font-heading flex items-center gap-1.5 text-lg font-semibold">
+            AI is styling you
+            <span className="flex" aria-hidden="true">
+              <span className="animate-dot">.</span>
+              <span className="animate-dot">.</span>
+              <span className="animate-dot">.</span>
+            </span>
+          </p>
           <div aria-live="polite" className="h-5">
             <AnimatePresence mode="wait">
               <motion.p
@@ -137,6 +134,9 @@ export function GenerationOverlay({
               </motion.p>
             </AnimatePresence>
           </div>
+          <p className="text-muted-foreground max-w-xs text-xs">
+            Dressing you in {garmentName}
+          </p>
           {typeof queuePosition === "number" && queuePosition > 0 ? (
             <p className="text-accent-strong text-xs font-medium" aria-live="polite">
               The AI studio is busy — you&apos;re position #{queuePosition} in line.
@@ -154,7 +154,7 @@ export function GenerationOverlay({
             aria-label="Generation progress"
           >
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#B8962E] to-[#D4AF37] transition-[width] duration-150"
+              className="bg-accent h-full rounded-full transition-[width] duration-150"
               style={{ width: `${progress}%` }}
             />
           </div>

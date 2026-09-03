@@ -31,7 +31,7 @@ const FAQS = [
   {
     question: "How realistic is the result?",
     answer:
-      "The current demo uses a mock generator to show the full product flow. The architecture is provider-based, so a production AI model drops in without changing the experience.",
+      "The demo runs on a real AI virtual-try-on model that understands how fabric drapes and fits your body. When the free AI service is busy or its daily quota is used up, the studio shows a demo preview instead — so you can always try the full flow.",
   },
   {
     question: "Can I download or share my results?",
@@ -61,12 +61,14 @@ export function Faq() {
               <AccordionItem
                 key={faq.question}
                 value={`item-${index}`}
-                className="border-border/70"
+                className="border-border/70 rounded-xl px-4 transition-all duration-300 data-[state=open]:border-l-4 data-[state=open]:border-accent data-[state=open]:bg-card/60"
               >
-                <AccordionTrigger className="font-heading text-left text-base font-semibold hover:no-underline [&[data-state=open]>svg]:rotate-45">
+                <AccordionTrigger className="font-heading py-5 text-left text-base font-semibold hover:no-underline [&[data-state=open]>svg]:rotate-45">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">{faq.answer}</AccordionContent>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  {faq.answer}
+                </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>

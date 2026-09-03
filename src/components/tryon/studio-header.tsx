@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo } from "@/components/shared/logo";
 
 export function StudioHeader() {
@@ -13,9 +12,8 @@ export function StudioHeader() {
         <div className="flex items-center gap-2">
           <span className="border-border bg-card text-muted-foreground hidden items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex">
             <Sparkles className="text-accent size-3.5" aria-hidden="true" />
-            Free demo
+            AI Try-On Studio
           </span>
-          <ThemeToggle />
           <Button asChild variant="outline" className="h-9 rounded-xl">
             <Link href="/">
               <ArrowLeft />

@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { AlertTriangle, ImagePlus, Sparkles, Wand2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, ImagePlus, Sparkles, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { UploadDropzone } from "@/components/tryon/upload-dropzone";
 import { ImageCropDialog } from "@/components/tryon/image-crop-dialog";
 import { GarmentPicker } from "@/components/tryon/garment-picker";
@@ -28,6 +27,7 @@ export function TryOnStudio() {
   const [error, setError] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [demoNotice, setDemoNotice] = useState<string | null>(null);
   const generatingRef = useRef(false);
 
   const tryOn = useTryOn();
@@ -73,6 +73,7 @@ export function TryOnStudio() {
       if (tryOnResult) {
         setResult(tryOnResult);
         if (tryOnNotice) {
+          setDemoNotice(tryOnNotice);
           toast.info("Demo Mode", { description: tryOnNotice });
         }
       }
@@ -156,6 +157,7 @@ export function TryOnStudio() {
     setGarment(null);
     setResult(null);
     setError(null);
+    setDemoNotice(null);
     setStage("setup");
     clearSession();
     toast.info("Started fresh", { description: "The studio is ready for a new look." });
@@ -164,9 +166,9 @@ export function TryOnStudio() {
   const canGenerate = Boolean(customerImage && garment && !generating);
 
   return (
-    <div className="container-page py-10 pb-28">
-      <div className="mx-auto flex max-w-5xl flex-col gap-8">
-        <div className="flex flex-col items-start gap-3">
+    <div className="container-page pb-32">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6">
+        <div className="flex flex-col items-center gap-3 pt-6 text-center sm:pt-10">
           <span className="bg-accent/15 text-accent-strong inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold">
             <Wand2 className="size-3.5" aria-hidden="true" />
             AI Try-On Studio
@@ -174,19 +176,36 @@ export function TryOnStudio() {
           <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             {result && stage === "result" ? "Your look, ready." : "Dress yourself in seconds."}
           </h1>
-          <p className="text-muted-foreground max-w-2xl">
-            Upload your photo, browse the store catalog, and let AI show you how each garment
-            looks on you — switch garments freely without re-uploading.
+          <p className="text-muted-foreground max-w-xl">
+            Upload a photo, pick an outfit, and let AI show you how it looks on you — before you
+            buy.
           </p>
         </div>
+
+        {demoNotice ? (
+          <div
+            role="status"
+            className="border-accent/40 bg-accent/10 text-accent-strong flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm"
+          >
+            <span className="flex-1">{demoNotice}</span>
+            <button
+              type="button"
+              onClick={() => setDemoNotice(null)}
+              className="rounded-md p-1 transition-colors hover:bg-accent/20"
+              aria-label="Dismiss notice"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
 
         {stage === "setup" ? (
           <>
             <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="border-border/70 bg-card flex flex-col gap-4 rounded-3xl p-6 shadow-sm">
+              <section className="border-border/70 bg-card flex flex-col gap-5 rounded-2xl border p-5 shadow-soft sm:p-6">
                 <div className="flex items-center gap-3">
                   <span
-                    className="bg-primary text-accent flex size-8 items-center justify-center rounded-full text-sm font-bold"
+                    className="bg-primary text-accent flex size-7 items-center justify-center rounded-full text-xs font-bold"
                     aria-hidden="true"
                   >
                     1
@@ -196,14 +215,17 @@ export function TryOnStudio() {
 
                 {customerImage ? (
                   <div className="flex flex-col gap-3">
-                    <div className="border-border relative mx-auto aspect-[3/4] w-full max-w-[260px] overflow-hidden rounded-2xl border">
+                    <div className="border-border relative mx-auto aspect-[3/4] w-full max-w-[300px] overflow-hidden rounded-[1.25rem] border shadow-soft">
                       <Image
                         src={customerImage}
                         alt="Your cropped photo"
                         fill
-                        sizes="260px"
+                        sizes="300px"
                         className="object-cover object-top"
                       />
+                      <span className="bg-black/50 absolute top-3 left-3 rounded-full px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">
+                        Your photo
+                      </span>
                     </div>
                     <UploadDropzone
                       value={customerImage}
@@ -226,20 +248,20 @@ export function TryOnStudio() {
                     onRemove={handleRemoveCustomer}
                   />
                 )}
-              </Card>
+              </section>
 
-              <Card className="border-border/70 bg-card flex flex-col gap-4 rounded-3xl p-6 shadow-sm">
+              <section className="border-border/70 bg-card flex flex-col gap-5 rounded-2xl border p-5 shadow-soft sm:p-6">
                 <div className="flex items-center gap-3">
                   <span
-                    className="bg-primary text-accent flex size-8 items-center justify-center rounded-full text-sm font-bold"
+                    className="bg-primary text-accent flex size-7 items-center justify-center rounded-full text-xs font-bold"
                     aria-hidden="true"
                   >
                     2
                   </span>
-                  <h2 className="font-heading text-lg font-semibold">Pick the garment</h2>
+                  <h2 className="font-heading text-lg font-semibold">Pick an outfit</h2>
                 </div>
                 <GarmentPicker value={garment} onSelect={handleGarmentSelected} />
-              </Card>
+              </section>
             </div>
 
             {error ? (
@@ -252,7 +274,7 @@ export function TryOnStudio() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 rounded-lg"
+                  className="h-8 rounded-xl"
                   onClick={() => void generate()}
                 >
                   Retry
@@ -261,7 +283,7 @@ export function TryOnStudio() {
             ) : null}
 
             <div className="sticky bottom-4 z-30">
-              <div className="border-border/70 bg-card/90 flex flex-col gap-4 rounded-3xl border p-5 shadow-2xl shadow-black/10 backdrop-blur-xl sm:flex-row sm:items-center">
+              <div className="border-border/70 bg-card/95 flex flex-col gap-4 rounded-2xl border p-4 shadow-soft backdrop-blur-xl sm:flex-row sm:items-center sm:p-5">
                 <div className="flex flex-1 items-center gap-3">
                   {customerImage ? (
                     <span className="border-border relative size-12 shrink-0 overflow-hidden rounded-xl border">
@@ -304,7 +326,7 @@ export function TryOnStudio() {
                             : "Add a photo and a garment to begin"}
                     </p>
                     <p className="text-muted-foreground text-xs">
-                      Free demo · AI-generated · usually under a minute
+                      AI-generated · usually under a minute
                     </p>
                   </div>
                 </div>
@@ -312,19 +334,23 @@ export function TryOnStudio() {
                 <div className="flex gap-2">
                   <Button
                     className={cn(
-                      "h-12 flex-1 rounded-2xl px-6 text-base sm:flex-none",
+                      "group/cta relative h-12 flex-1 overflow-hidden rounded-xl bg-foreground px-6 text-base font-semibold text-background shadow-soft transition-colors hover:bg-foreground sm:flex-none",
                       !canGenerate && "pointer-events-none opacity-40"
                     )}
                     onClick={() => void generate()}
                     disabled={!canGenerate}
                   >
-                    <Sparkles />
-                    Generate my look
+                    <span
+                      aria-hidden="true"
+                      className="animate-sheen pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-accent/30 blur-md group-hover/cta:animate-sheen"
+                    />
+                    Generate Look
+                    <ArrowRight />
                   </Button>
                   {result ? (
                     <Button
                       variant="ghost"
-                      className="h-12 rounded-2xl px-4"
+                      className="h-12 rounded-xl px-4"
                       onClick={handleStartOver}
                       title="Clear everything"
                     >
@@ -365,23 +391,23 @@ export function TryOnStudio() {
             </div>
           </>
         ) : null}
+
+        <GenerationOverlay
+          open={stage === "generating"}
+          customerImage={customerImage ?? ""}
+          garmentImage={garment?.imageUrl ?? ""}
+          garmentName={garment?.name ?? "your outfit"}
+          queuePosition={tryOn.queuePosition}
+          onCancel={handleCancel}
+        />
+
+        <ImageCropDialog
+          open={cropOpen}
+          onOpenChange={setCropOpen}
+          imageUrl={customerRawImage}
+          onConfirm={handleCropConfirm}
+        />
       </div>
-
-      <GenerationOverlay
-        open={stage === "generating"}
-        customerImage={customerImage ?? ""}
-        garmentImage={garment?.imageUrl ?? ""}
-        garmentName={garment?.name ?? "your outfit"}
-        queuePosition={tryOn.queuePosition}
-        onCancel={handleCancel}
-      />
-
-      <ImageCropDialog
-        open={cropOpen}
-        onOpenChange={setCropOpen}
-        imageUrl={customerRawImage}
-        onConfirm={handleCropConfirm}
-      />
     </div>
   );
 }

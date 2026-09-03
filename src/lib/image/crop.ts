@@ -38,8 +38,13 @@ function drawRotatedSource(
 }
 
 /**
- * Renders the source image into a portrait crop (3:4) with zoom and 90°-step
+ * Renders the source image into a 3:4 portrait canvas with zoom and 90°-step
  * rotation applied. Returns a PNG data URL.
+ *
+ * At zoom 1 the ENTIRE source photo is letterboxed (contain) to fit the 3:4
+ * canvas, so the person's full body is never cropped — regardless of whether
+ * the upload is portrait or landscape. Zooming in scales the centered window
+ * (the person stays fully visible at every zoom level).
  */
 export async function renderCrop(
   sourceDataUrl: string,
@@ -53,18 +58,9 @@ export async function renderCrop(
   const baseWidth = rotated ? image.naturalHeight : image.naturalWidth;
   const baseHeight = rotated ? image.naturalWidth : image.naturalHeight;
 
-  let cropWidth: number;
-  let cropHeight: number;
-  if (baseWidth / baseHeight > CROP_ASPECT_RATIO) {
-    cropHeight = baseHeight;
-    cropWidth = baseHeight * CROP_ASPECT_RATIO;
-  } else {
-    cropWidth = baseWidth;
-    cropHeight = baseWidth / CROP_ASPECT_RATIO;
-  }
-
-  const sourceWidth = cropWidth / transform.zoom;
-  const sourceHeight = cropHeight / transform.zoom;
+  // Zoom 1 = whole source image; zooming in takes a centered window.
+  const sourceWidth = baseWidth / transform.zoom;
+  const sourceHeight = baseHeight / transform.zoom;
   const sourceX = (baseWidth - sourceWidth) / 2;
   const sourceY = (baseHeight - sourceHeight) / 2;
 
@@ -83,6 +79,13 @@ export async function renderCrop(
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Canvas is not supported in this browser.");
 
+  // Letterbox (contain) fit into the 3:4 canvas — preserves the complete person.
+  const fitScale = Math.min(outputWidth / sourceWidth, outputHeight / sourceHeight);
+  const drawWidth = sourceWidth * fitScale;
+  const drawHeight = sourceHeight * fitScale;
+  const drawX = (outputWidth - drawWidth) / 2;
+  const drawY = (outputHeight - drawHeight) / 2;
+
   context.imageSmoothingQuality = "high";
   context.drawImage(
     intermediate,
@@ -90,10 +93,10 @@ export async function renderCrop(
     sourceY,
     sourceWidth,
     sourceHeight,
-    0,
-    0,
-    outputWidth,
-    outputHeight
+    drawX,
+    drawY,
+    drawWidth,
+    drawHeight
   );
 
   return canvas.toDataURL("image/png");

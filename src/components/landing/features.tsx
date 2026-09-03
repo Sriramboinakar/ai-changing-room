@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { Gift, Repeat2, Share2, ShieldCheck, Smartphone, Timer } from "lucide-react";
+import { Gift, Repeat2, Share2, ShieldCheck, Smartphone, Wand2 } from "lucide-react";
 
 import { SectionHeading } from "@/components/shared/section-heading";
 import { cn } from "@/lib/utils";
@@ -12,10 +11,7 @@ const FEATURES = [
     title: "Photorealistic results",
     description:
       "AI understands how fabric falls, drapes, and fits your body — so what you see is what you get, down to the fold.",
-    icon: Timer,
-    image: "/demo/result.svg",
-    imageAlt: "Photorealistic AI try-on preview of a gold outfit",
-    large: true,
+    icon: Wand2,
   },
   {
     title: "Private by design",
@@ -68,17 +64,16 @@ export function Features() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.6, delay: (index % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={reduceMotion ? undefined : { y: -6 }}
+                whileHover={reduceMotion ? undefined : { scale: 1.02, y: -4 }}
                 className={cn(
-                  "group border-border/70 bg-card relative flex flex-col gap-4 overflow-hidden rounded-3xl border p-7 shadow-sm transition-shadow duration-300 hover:shadow-xl hover:shadow-black/5",
-                  feature.large && "sm:col-span-2 lg:row-span-2"
+                  "group border-border/70 bg-card relative flex flex-col gap-4 overflow-hidden rounded-2xl border p-7 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/50 hover:shadow-xl hover:shadow-black/20"
                 )}
               >
                 <span
-                  className="bg-accent/10 pointer-events-none absolute -top-16 -right-16 size-40 rounded-full blur-2xl transition-opacity duration-500 group-hover:opacity-100 sm:opacity-0"
+                  className="bg-accent/10 pointer-events-none absolute -top-16 -right-16 size-40 rounded-full blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                   aria-hidden="true"
                 />
-                <span className="bg-primary text-accent relative flex size-11 items-center justify-center rounded-2xl shadow-sm">
+                <span className="bg-accent/15 text-accent-strong relative flex size-11 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_24px_rgba(212,175,55,0.35)]">
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
                 <h3 className="font-heading relative text-xl font-semibold tracking-tight">
@@ -87,21 +82,6 @@ export function Features() {
                 <p className="text-muted-foreground relative text-sm leading-relaxed">
                   {feature.description}
                 </p>
-                {feature.image ? (
-                  <div className="border-border/60 relative mt-auto aspect-[3/2] overflow-hidden rounded-2xl border">
-                    <Image
-                      src={feature.image}
-                      alt={feature.imageAlt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
-                    />
-                    <div
-                      className="from-primary/10 absolute inset-0 bg-gradient-to-t to-transparent"
-                      aria-hidden="true"
-                    />
-                  </div>
-                ) : null}
               </motion.article>
             );
           })}
