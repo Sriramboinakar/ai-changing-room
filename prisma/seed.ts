@@ -1,11 +1,13 @@
 import "dotenv/config";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { DEMO_GARMENTS } from "../src/lib/tryon/garments";
 
+// Prisma 7 requires a driver adapter. Use the DIRECT connection for
+// seeding/migrations so long-running statements don't trip pgbouncer limits.
 const prisma = new PrismaClient({
-  adapter: new PrismaNeon({
-    connectionString: process.env.DATABASE_URL ?? "postgres://",
+  adapter: new PrismaPg({
+    connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
   }),
 });
 

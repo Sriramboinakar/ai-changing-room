@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
-import { neonConfig } from "@neondatabase/serverless";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 import { DEMO_GARMENTS } from "@/lib/tryon/garments";
-import WebSocket from "ws";
 
 // ------------------------------------------------------------------
 // Store & catalog gateway.
-// When DATABASE_URL points at a real Postgres (Neon) database we use
-// Prisma. Otherwise the app runs on the built-in demo store so the
-// site keeps working out of the box with zero configuration.
+// When DATABASE_URL points at a real Postgres database (e.g. Supabase)
+// we use Prisma. Otherwise the app runs on the built-in demo store so
+// the site keeps working out of the box with zero configuration.
 // ------------------------------------------------------------------
 
 interface Store {
@@ -93,13 +91,12 @@ function getRealPrisma(): PrismaClient | null {
   if (!useRealDb) return null;
   if (realPrisma) return realPrisma;
 
-  neonConfig.webSocketConstructor = WebSocket;
-  neonConfig.poolQueryViaFetch = true;
-
+  // Prisma 7 requires a driver adapter (schema datasource no longer holds a
+  // URL). node-postgres adapter connects via the pooled DATABASE_URL.
   realPrisma =
     globalForPrisma.prisma ??
     new PrismaClient({
-      adapter: new PrismaNeon({ connectionString: DATABASE_URL }),
+      adapter: new PrismaPg({ connectionString: DATABASE_URL }),
     });
 
   if (process.env.NODE_ENV !== "production") {
