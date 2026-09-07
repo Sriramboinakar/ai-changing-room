@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       {
         success: false,
         fallback: true,
-        message: "Streaming try-on requires the idmvton provider.",
+        message: "Streaming is only available for the idmvton provider. Falling back to the standard route.",
       },
       { status: 200 }
     );

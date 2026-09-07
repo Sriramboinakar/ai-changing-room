@@ -4,7 +4,7 @@ import type { TryOnProvider, TryOnRequest, TryOnResult } from "@/lib/ai/types";
 import { toRasterDataUrl } from "@/lib/ai/providers/fal";
 
 const DEFAULT_SPACE_URL = "https://yisol-idm-vton.hf.space";
-const POLL_TIMEOUT_MS = 120_000;
+const POLL_TIMEOUT_MS = 240_000;
 const MAX_POLL_ITERATIONS = 30;
 const POLL_INTERVAL_MS = 2000;
 const POLL_FETCH_TIMEOUT_MS = 15_000;
