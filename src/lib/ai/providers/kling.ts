@@ -3,7 +3,7 @@ import { fal } from "@fal-ai/client";
 import type { TryOnProvider, TryOnRequest, TryOnResult } from "@/lib/ai/types";
 import { toRasterDataUrl } from "@/lib/ai/providers/fal";
 
-const KLING_MODEL = "fal-ai/kling/kolors/virtual-try-on/v1.5";
+const KLING_MODEL = "fal-ai/kling/v1-5/kolors-virtual-try-on";
 const GENERATION_TIMEOUT_MS = 60_000;
 const RESULT_DOWNLOAD_TIMEOUT_MS = 60_000;
 
